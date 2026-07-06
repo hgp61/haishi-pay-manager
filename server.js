@@ -232,6 +232,7 @@ const MERCHANTS_FILE = path.join(DATA_DIR, 'merchants.json');
 // ======================== 管理员配置 ========================
 
 const ADMIN_CONFIG_FILE = path.join(DATA_DIR, 'admin.json');
+const ADMIN_SESSIONS_FILE = path.join(DATA_DIR, 'admin-sessions.json');
 
 function loadAdminConfig() {
   try {
@@ -247,6 +248,50 @@ function saveAdminConfig(cfg) {
   saveAdminConfigWithSync(cfg);
 }
 
+// 管理员 session 持久化：服务器重启后仍保持登录态
+function loadAdminSessions() {
+  try {
+    if (fs.existsSync(ADMIN_SESSIONS_FILE)) {
+      const arr = JSON.parse(fs.readFileSync(ADMIN_SESSIONS_FILE, 'utf-8'));
+      if (Array.isArray(arr)) {
+        adminSessions.clear();
+        for (const s of arr) {
+          if (s && s.token && s.createdAt && Date.now() - s.createdAt < SESSION_TTL) {
+            adminSessions.set(s.token, { createdAt: s.createdAt, type: s.type || 'admin' });
+          }
+        }
+      }
+    }
+  } catch (e) { console.error('读取管理员会话失败:', e.message); }
+}
+
+function saveAdminSessions() {
+  try {
+    const arr = [];
+    for (const [token, s] of adminSessions.entries()) {
+      if (Date.now() - s.createdAt < SESSION_TTL) {
+        arr.push({ token, createdAt: s.createdAt, type: s.type || 'admin' });
+      }
+    }
+    fs.writeFileSync(ADMIN_SESSIONS_FILE, JSON.stringify(arr, null, 2), 'utf-8');
+  } catch (e) { console.error('保存管理员会话失败:', e.message); }
+}
+
+function setAdminSession(token, session) {
+  adminSessions.set(token, session);
+  saveAdminSessions();
+}
+
+function deleteAdminSession(token) {
+  adminSessions.delete(token);
+  saveAdminSessions();
+}
+
+function clearAdminSessions() {
+  adminSessions.clear();
+  saveAdminSessions();
+}
+
 let adminConfig;
 const ADMIN_USERNAME = 'admin';
 const adminSessions = new Map();
@@ -257,6 +302,7 @@ const SESSION_TTL = 24 * 60 * 60 * 1000;
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(MERCHANT_DATA_DIR)) fs.mkdirSync(MERCHANT_DATA_DIR, { recursive: true });
 if (!fs.existsSync(MERCHANTS_FILE)) fs.writeFileSync(MERCHANTS_FILE, '[]', 'utf-8');
+loadAdminSessions();
 
 // ======================== 商户运行时状态 ========================
 // 每个商户独立的内存状态，通过 merchantRuntime(id) 懒加载
@@ -544,7 +590,7 @@ app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
   if (username === ADMIN_USERNAME && password === adminConfig.password) {
     const token = crypto.randomBytes(16).toString('hex');
-    adminSessions.set(token, { createdAt: Date.now(), type: 'admin' });
+    setAdminSession(token, { createdAt: Date.now(), type: 'admin' });
     return res.json({ code: 'OK', token, message: '登录成功' });
   }
   res.status(400).json({ code: 'FAIL', message: '账号或密码错误' });
@@ -557,7 +603,7 @@ app.post('/api/admin/check', (req, res) => {
 });
 
 app.post('/api/admin/logout', (req, res) => {
-  adminSessions.delete(cleanToken(req.headers.authorization || req.body.token));
+  deleteAdminSession(cleanToken(req.headers.authorization || req.body.token));
   res.json({ code: 'OK' });
 });
 
@@ -575,7 +621,7 @@ app.post('/api/admin/change-password', requireAuth, (req, res) => {
   adminConfig.password = newPassword;
   saveAdminConfig(adminConfig);
   // 修改密码后清除所有现有 session，强制重新登录
-  adminSessions.clear();
+  clearAdminSessions();
   res.json({ code: 'OK', message: '密码已修改，请重新登录' });
 });
 
@@ -1263,7 +1309,7 @@ app.post('/m/:id/cashier/qrcode', express.json(), async (req, res) => {
     rt.cashierOrders.set(outTradeNo, { amount, subject, body, qrCode: qrContent, status: 'waiting', createdAt: Date.now() });
     setTimeout(() => rt.cashierOrders.delete(outTradeNo), 31 * 60 * 1000);
 
-    rt.orders.push({ outTradeNo, amount: amtNum.toFixed(2), subject, status: 'generated', createdAt: new Date().toISOString(), paidAt: null, payerIp: toIPv4(req.ip) });
+    rt.orders.push({ outTradeNo, amount: amtNum.toFixed(2), subject, status: 'generated', createdAt: new Date().toISOString(), paidAt: null, payerIp: getClientIp(req) });
     saveMerchantFile(m.id, 'orders', rt.orders);
 
     return res.json({

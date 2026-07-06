@@ -1560,7 +1560,27 @@
   }
   @media (max-width: 768px) {
     .topnav { padding: 0 12px; height: 50px; }
-    .topnav-nav { display: none; }
+    .topnav-nav {
+      display: flex;
+      flex-direction: row;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      gap: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      max-width: 40%;
+    }
+    .topnav-nav::-webkit-scrollbar { display: none; }
+    .topnav-nav a {
+      padding: 6px 8px;
+      font-size: 11px;
+      letter-spacing: 0;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .topnav-nav a svg { width: 14px; height: 14px; }
     .topnav-logo { width: 28px; height: 28px; }
     .topnav-sub { font-size: 11px; }
     .main-wrap { margin-top: 50px; min-height: calc(100vh - 50px); padding: 10px; }
@@ -1572,7 +1592,7 @@
     .btn { padding: 7px 14px; font-size: 11px; }
     .table-header-bar { padding: 10px 14px; }
     .table-title { font-size: 13px; }
-    table { font-size: 11px; min-width: auto; }
+    table { font-size: 11px; min-width: 600px; }
     table thead th,
     table tbody td { padding: 8px 8px; font-size: 11px; }
     .pagination-bar { padding: 10px 14px; }
@@ -1580,17 +1600,39 @@
     .merchant-layout { grid-template-columns: 1fr; gap: 20px; padding: 0; }
     .merchant-qr-panel { margin-top: 10px; }
     .info-row { flex-direction: column; gap: 0; }
+    /* 仪表盘响应式 */
+    .dash-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .dash-card { padding: 14px 12px; gap: 10px; }
+    .dash-card-icon { width: 40px; height: 40px; font-size: 18px; }
+    .dash-card-value { font-size: 20px; }
+    .dash-card-label { font-size: 10px; }
+    .dash-chart-wrap { height: 180px; }
+    .date-picker-popup.show { min-width: 280px; }
+    .cal-month { min-width: 120px; }
+    /* 安全设置页响应式 */
+    .content-card { max-width: 100% !important; }
   }
 
   @media (max-width: 480px) {
     .breadcrumb { padding: 10px 0 14px; font-size: 11px; }
     .content-card { border-radius: 10px; }
     .filter-item { flex-direction: column; align-items: flex-start; width: 100%; }
-    input.filter-input, .filter-select { width: 100%; }
+    input.filter-input, .filter-select { width: 100%; max-width: 100%; }
     .sec-card { padding: 18px 20px; }
     .qr-brand-logo { width: 56px; height: 56px; border-radius: 14px; }
     .qr-brand-name { font-size: 18px; }
     .merchant-qr-panel { padding: 24px 18px; }
+    .dash-cards { grid-template-columns: 1fr; }
+    .dash-card { padding: 12px 14px; }
+    .topnav-nav { max-width: 35%; }
+    .topnav-nav a { padding: 5px 6px; font-size: 10px; }
+    .topnav-nav a svg { width: 12px; height: 12px; }
+    .topnav-logout { font-size: 10px; padding: 6px 8px; }
+    .topnav-logout svg { width: 12px; height: 12px; }
+    .topnav-user span { display: none; }
+    .modal-dialog { min-width: auto; width: 92vw; padding: 20px 18px; }
+    .security-overlay-panel { width: 92vw; }
+    .date-picker-popup.show { min-width: 260px; }
   }
 
 
@@ -1674,7 +1716,7 @@
     <a href="#" onclick="switchPage('manage')" id="navManage"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18"></path><path d="M5 7l2 12h10l2-12"></path><path d="M9 11v6"></path><path d="M15 11v6"></path></svg>商户管理</a>
     <a href="#" onclick="switchPage('orders')" id="navOrders"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>订单中心</a>
     <a href="#" onclick="switchPage('limits')" id="navLimits"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>限额设置</a>
-    <a href="#" onclick="openSecurityOverlay()" id="navSecurity"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>安全设置</a>
+    <a href="#" onclick="switchPage('security')" id="navSecurity"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>安全设置</a>
   </div>
   <div class="topnav-right">
     <div class="topnav-user" onclick="openChangePwdModal()">
@@ -4163,6 +4205,10 @@ function switchPage(page) {
     document.getElementById('limitsPage').style.display = '';
     if (navLimits) navLimits.classList.add('active');
     loadLimitsConfig();
+  } else if (page === 'security') {
+    if (secSetPage) secSetPage.style.display = '';
+    if (navSecurity) navSecurity.classList.add('active');
+    loadSecurityConfig();
   }
 }
 

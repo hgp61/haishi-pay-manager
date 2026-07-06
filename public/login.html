@@ -140,12 +140,23 @@
     line-height: 1.6;
   }
   .default-tip span { color: var(--gold); }
+
+  /* 响应式 */
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .login-card { padding: 28px 20px; border-radius: 16px; }
+    .brand-logo { width: 52px; height: 52px; font-size: 24px; margin-bottom: 16px; }
+    .brand-title { font-size: 20px; letter-spacing: 1px; }
+    .brand-sub { font-size: 11px; margin-bottom: 24px; }
+    .form-input { padding: 11px 14px; font-size: 14px; }
+    .btn-login { padding: 12px; font-size: 15px; }
+  }
 </style>
 </head>
 <body>
 
 <div class="login-card">
-  <div class="brand-logo">黑</div>
+  <div class="brand-logo">海</div>
   <div class="brand-title">海狮PAY 商户管理系统</div>
   <div class="brand-sub">模板内嵌 · 一键生成 · 统一管理</div>
 
