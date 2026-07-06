@@ -29,7 +29,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
     position: relative;
     overflow-x: hidden;
   }
@@ -73,22 +72,18 @@
   /* ===== 主卡片 ===== */
   .cashier-card {
     background: rgba(225,235,245,0.92);
-    border-radius: 24px;
-    border: 1px solid rgba(74,144,217,0.25);
-    box-shadow:
-      0 24px 80px rgba(74,144,217,0.22),
-      0 0 40px rgba(74,144,217,0.06),
-      inset 0 1px 0 rgba(74,144,217,0.1);
     width: 100%;
-    max-width: 420px;
-    overflow: visible;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     animation: cardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     z-index: 1;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    /* 防止卡片高度超出屏幕时被截断 */
-    flex-shrink: 0;
   }
   @keyframes cardIn {
     from { opacity:0; transform: translateY(40px) scale(0.96); }
@@ -110,6 +105,8 @@
     text-align: center;
     position: relative;
     background: linear-gradient(180deg, rgba(74,144,217,0.08) 0%, transparent 70%);
+    width: 100%;
+    max-width: 560px;
   }
   /* QR 展示时头部紧凑 */
   .merchant-header.compact {
@@ -123,6 +120,7 @@
     border: 2px solid rgba(74,144,217,0.35);
     box-shadow: 0 8px 32px rgba(74,144,217,0.2), 0 0 20px rgba(74,144,217,0.08);
     animation: logoFloat 4s ease-in-out infinite;
+    background: #ffffff;
   }
   .merchant-header.compact .logo-wrap {
     width: 36px; height: 36px;
@@ -164,6 +162,8 @@
   .amount-section {
     padding: 24px 24px 16px;
     text-align: center;
+    width: 100%;
+    max-width: 560px;
   }
   .amount-label {
     font-size: 13px; color: rgba(74,144,217,0.55);
@@ -254,6 +254,8 @@
   /* ===== 支付按钮 ===== */
   .pay-section {
     padding: 16px 24px 28px;
+    width: 100%;
+    max-width: 560px;
   }
   .pay-btn {
     width: 100%;
@@ -303,6 +305,8 @@
     padding: 12px 24px 20px;
     text-align: center;
     display: none;
+    width: 100%;
+    max-width: 560px;
   }
   .qr-section.show { display: block; animation: fadeIn 0.4s ease; }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -425,6 +429,8 @@
     padding: 44px 24px;
     text-align: center;
     display: none;
+    width: 100%;
+    max-width: 560px;
   }
   .success-section.show { display: block; animation: successIn 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
   @keyframes successIn {
@@ -503,6 +509,8 @@
     color: #4A90D9;
     text-align: center;
     line-height: 1.5;
+    width: 100%;
+    max-width: 560px;
   }
   .test-mode-bar.show { display: block; }
 
@@ -676,11 +684,7 @@
 
   /* ===== 响应式 ===== */
   @media (max-width: 480px) {
-    body { padding: 8px; }
-    .cashier-card {
-      border-radius: 18px;
-      max-width: 100%;
-    }
+    .cashier-card { min-height: 100vh; min-height: 100dvh; }
     .amount-input { font-size: 36px; width: 170px; }
     .amount-yen { font-size: 28px; }
     .merchant-header { padding: 22px 20px 16px; }
@@ -716,8 +720,7 @@
 
   /* ===== 平板端 481-767px ===== */
   @media (min-width: 481px) and (max-width: 767px) {
-    body { padding: 24px; align-items: center; }
-    .cashier-card { max-width: 480px; margin-top: 0; }
+    .cashier-card { min-height: 100vh; min-height: 100dvh; }
     .merchant-header { padding: 26px 24px 20px; }
     .merchant-header.compact { padding: 14px 20px 10px; }
     .merchant-header.compact .logo-wrap { width: 34px; height: 34px; margin-bottom: 5px; }
@@ -747,13 +750,12 @@
   /* ===== 桌面端 768-1199px ===== */
   @media (min-width: 768px) {
     body {
-      padding: 16px 24px;
       align-items: center;
       min-height: 100vh;
     }
     .cashier-card {
-      max-width: 520px;
-      border-radius: 24px;
+      min-height: 100vh;
+      min-height: 100dvh;
     }
     .merchant-header { padding: 24px 28px 18px; }
     .merchant-header.compact { padding: 12px 20px 8px; }
@@ -798,8 +800,7 @@
 
   /* ===== 大屏桌面 1200px+ ===== */
   @media (min-width: 1200px) {
-    body { padding: 24px; align-items: center; }
-    .cashier-card { max-width: 560px; }
+    .cashier-card { min-height: 100vh; min-height: 100dvh; }
     .merchant-header { padding: 28px 32px 20px; }
     .merchant-header.compact { padding: 14px 24px 10px; }
     .merchant-header.compact .logo-wrap { width: 38px; height: 38px; }
