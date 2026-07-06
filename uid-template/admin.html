@@ -1112,6 +1112,13 @@
   /* ===== 商户管理页面 ===== */
   .merchant-page {
     display: none;
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+    margin-left: 220px;
+    width: auto;
+    min-height: 100vh;
+    box-sizing: border-box;
   }
   .merchant-page.show {
     display: block;
@@ -1545,6 +1552,11 @@
       margin-top: 56px;
       min-height: calc(100vh - 56px);
     }
+    .merchant-page {
+      margin-left: 0;
+      margin-top: 56px;
+      min-height: calc(100vh - 56px);
+    }
   }
   @media (max-width: 768px) {
     .topnav { padding: 0 12px; height: 50px; }
@@ -1552,6 +1564,7 @@
     .topnav-logo { width: 28px; height: 28px; }
     .topnav-sub { font-size: 11px; }
     .main-wrap { margin-top: 50px; min-height: calc(100vh - 50px); padding: 10px; }
+    .merchant-page { margin-top: 50px; min-height: calc(100vh - 50px); padding: 10px; }
     .filter-section { padding: 14px 14px 6px; }
     .filter-row { gap: 8px; }
     input.filter-input { width: 100%; max-width: 200px; }
