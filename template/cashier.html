@@ -127,12 +127,7 @@
   .merchant-header.compact .merchant-desc {
     font-size: 11px;
   }
-  .merchant-header.compact .alipay-badge {
-    padding: 3px 10px;
-    font-size: 10px;
-    margin-top: 8px;
-  }
-  .logo-wrap {
+  .merchant-header.compact .logo-wrap {
     width: 72px; height: 72px;
     margin: 0 auto 14px;
     border-radius: 20px;
@@ -165,17 +160,6 @@
     color: rgba(74,144,217,0.6);
     letter-spacing: 2px;
   }
-  .alipay-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: rgba(74,144,217,0.1);
-    border: 1px solid rgba(74,144,217,0.2);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 11px;
-    color: rgba(74,144,217,0.75);
-    margin-top: 12px;
-  }
-
   /* ===== 输入区域 ===== */
   .amount-section {
     padding: 24px 24px 16px;
@@ -265,135 +249,6 @@
     stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  /* ===== 自定义商品类型下拉框 ===== */
-  .category-select-wrap {
-    margin-top: 16px;
-    position: relative;
-    z-index: 10;
-  }
-  .category-select-label {
-    font-size: 12px;
-    color: rgba(74,144,217,0.45);
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
-  .cd-selected {
-    width: 100%;
-    background: rgba(74,144,217,0.04);
-    border: 1px solid rgba(74,144,217,0.2);
-    border-radius: 12px;
-    padding: 13px 16px;
-    font-size: 14px;
-    color: #b8d4f0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: all 0.3s;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .cd-selected:active,
-  .cd-selected.open {
-    border-color: #4A90D9;
-    box-shadow: 0 0 0 2px rgba(74,144,217,0.12);
-    background-color: rgba(74,144,217,0.07);
-  }
-  .cd-selected.open {
-    border-radius: 12px 12px 0 0;
-    border-bottom-color: transparent;
-  }
-  .cd-arrow {
-    width: 12px;
-    height: 12px;
-    flex-shrink: 0;
-    margin-left: 8px;
-    transition: transform 0.25s;
-  }
-  .cd-arrow path { fill: #4A90D9; }
-  .cd-selected.open .cd-arrow {
-    transform: rotate(180deg);
-  }
-
-  /* 下拉选项列表 —— JS 动态定位到按钮正下方，只显示3行 */
-  .cd-options {
-    position: fixed;
-    background: #dde8f5;
-    border: 1px solid #4A90D9;
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    max-height: 156px;
-    overflow-y: auto;
-    z-index: 60;
-    display: none;
-    box-shadow: 0 8px 24px rgba(74,144,217,0.18), 0 0 12px rgba(74,144,217,0.1);
-    animation: dropdownIn 0.2s ease;
-    -webkit-overflow-scrolling: touch;
-  }
-  .cd-options.show {
-    display: block;
-  }
-  @keyframes dropdownIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* 滚动条样式 */
-  .cd-options::-webkit-scrollbar {
-    width: 5px;
-  }
-  .cd-options::-webkit-scrollbar-track {
-    background: rgba(74,144,217,0.03);
-    border-radius: 0 0 12px 0;
-  }
-  .cd-options::-webkit-scrollbar-thumb {
-    background: rgba(74,144,217,0.35);
-    border-radius: 3px;
-  }
-  .cd-options::-webkit-scrollbar-thumb:hover {
-    background: rgba(74,144,217,0.55);
-  }
-
-  .cd-option {
-    padding: 14px 16px;
-    font-size: 15px;
-    color: #ccc;
-    cursor: pointer;
-    transition: all 0.15s;
-    border-bottom: 1px solid rgba(74,144,217,0.06);
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
-    line-height: 1.5;
-  }
-  .cd-option:last-child {
-    border-bottom: none;
-  }
-  .cd-option:active,
-  .cd-option:hover {
-    background: rgba(74,144,217,0.12);
-    color: #4A90D9;
-  }
-  .cd-option.selected {
-    background: rgba(74,144,217,0.15);
-    color: #4A90D9;
-    font-weight: 600;
-  }
-
-  /* 下拉遮罩（全屏，点击关闭） */
-  .cd-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    background: rgba(0,0,0,0.35);
-    display: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .cd-overlay.show {
-    display: block;
   }
 
   /* ===== 支付按钮 ===== */
@@ -832,8 +687,7 @@
     .merchant-header.compact { padding: 10px 16px 8px; }
     .merchant-header.compact .logo-wrap { width: 44px; height: 44px; margin-bottom: 6px; }
     .merchant-header.compact .brand-name { font-size: 15px; letter-spacing: 2px; }
-    .merchant-header.compact .alipay-badge { margin-top: 5px; padding: 2px 8px; font-size: 9px; }
-    .logo-wrap { width: 62px; height: 62px; border-radius: 16px; }
+    .merchant-header.compact .logo-wrap { width: 62px; height: 62px; border-radius: 16px; }
     .brand-name { font-size: 19px; letter-spacing: 3px; }
     .qr-section { padding: 8px 16px 16px; }
     .qr-title { font-size: 15px; }
@@ -846,7 +700,6 @@
     .success-amount { font-size: 32px; }
     .btn-group { gap: 8px; }
     .download-btn, .cancel-btn { padding: 9px 16px; font-size: 12px; }
-    .cd-options { max-height: 140px; }
   }
 
   @media (max-width: 360px) {
@@ -854,7 +707,6 @@
     .amount-yen { font-size: 24px; }
     .brand-name { font-size: 17px; }
     .pay-btn { padding: 14px; font-size: 15px; }
-    .cd-options { max-height: 128px; }
     .qr-img { width: 140px; height: 140px; }
     .qr-title { font-size: 14px; }
     .qr-amount { font-size: 22px; }
@@ -887,7 +739,6 @@
     .qr-amount { font-size: 28px; margin: 8px 0 2px; }
     .qr-subject { font-size: 12px; margin-bottom: 10px; }
     .qr-tip { font-size: 12px; padding: 8px 18px; margin-bottom: 10px; }
-    .cd-options { max-height: 148px; }
     .success-title { font-size: 24px; }
     .success-amount { font-size: 36px; }
     .download-btn, .cancel-btn { padding: 10px 20px; font-size: 13px; }
@@ -909,12 +760,9 @@
     .merchant-header.compact .logo-wrap { width: 48px; height: 48px; margin-bottom: 6px; }
     .merchant-header.compact .brand-name { font-size: 16px; letter-spacing: 3px; }
     .merchant-header.compact .merchant-desc { font-size: 11px; }
-    .merchant-header.compact .alipay-badge { margin-top: 6px; padding: 2px 10px; font-size: 10px; }
-    .logo-wrap { width: 72px; height: 72px; border-radius: 20px; margin-bottom: 12px; }
+    .merchant-header.compact .logo-wrap { width: 72px; height: 72px; border-radius: 20px; margin-bottom: 12px; }
     .brand-name { font-size: 24px; letter-spacing: 5px; }
     .merchant-desc { font-size: 13px; letter-spacing: 2px; }
-    .alipay-badge { padding: 5px 14px; font-size: 11px; margin-top: 12px; }
-
     .amount-section { padding: 20px 28px 14px; }
     .amount-label { font-size: 13px; margin-bottom: 12px; letter-spacing: 2px; }
     .amount-input { font-size: 48px; width: 220px; padding-bottom: 4px; }
@@ -946,8 +794,6 @@
     .success-icon svg { width: 42px; height: 42px; }
 
     .error-toast { font-size: 14px; padding: 14px 28px; border-radius: 14px; }
-    .cd-options { max-height: 150px; }
-    .cd-option { padding: 14px 16px; font-size: 15px; }
   }
 
   /* ===== 大屏桌面 1200px+ ===== */
@@ -985,8 +831,7 @@
     </div>
     <div class="brand-name">海狮PAY</div>
     <div class="merchant-desc">安全收款 · 即时到账</div>
-    <div class="alipay-badge">🔒 支付宝加密支付</div>
-  </div>
+    </div>
 
   <!-- 输入区域 -->
   <div class="amount-section" id="inputSection">
@@ -1004,15 +849,7 @@
       </div>
     </div>
 
-    <!-- 商品类型：下拉框在按钮正下方 -->
-    <div class="category-select-wrap">
-      <div class="category-select-label">商品类型</div>
-      <div class="cd-selected" id="cdSelected" onclick="toggleCategoryDropdown(event)">
-        <span id="cdSelectedText">游戏充值</span>
-        <svg class="cd-arrow" viewBox="0 0 12 12"><path d="M6 8L1 3h10z"/></svg>
-      </div>
     </div>
-  </div>
 
   <!-- 支付按钮 -->
   <div class="pay-section" id="btnSection">
@@ -1095,18 +932,6 @@
   </div>
 </div>
 
-<!-- 下拉遮罩（全屏点击关闭） -->
-<div class="cd-overlay" id="cdOverlay" onclick="closeCategoryDropdown()"></div>
-
-<!-- 下拉选项（position:fixed + JS 动态定位，在卡片外避免 backdrop-filter stacking 问题） -->
-<div class="cd-options" id="cdOptions">
-  <div class="cd-option selected" onclick="selectCategory('游戏充值')">游戏充值</div>
-  <div class="cd-option" onclick="selectCategory('百货家居')">百货家居</div>
-  <div class="cd-option" onclick="selectCategory('服装批发')">服装批发</div>
-  <div class="cd-option" onclick="selectCategory('五金器械')">五金器械</div>
-  <div class="cd-option" onclick="selectCategory('软件定制服务')">软件定制服务</div>
-</div>
-
 <script>
 // ==================== 配置 ====================
 const API_BASE = '';
@@ -1117,51 +942,17 @@ let pollingTimer = null;
 let lastAmount = '';
 let lastSubject = '';
 let lastQrImage = '';
-let currentCategory = '游戏充值';
-let cdOpen = false;
+const CATEGORY_LIST = ['游戏充值','百货家居','服装批发','五金器械','软件定制服务'];
+let currentCategoryIndex = 0;
+let currentCategory = CATEGORY_LIST[0];
 let limitConfig = {};  // 从 /api/limits 拉取的限额配置
 let mgrConfig = { enabled: true, mgrMinAmount: null, mgrMaxAmount: null };  // 从 /api/config 拉取的管理系统配置
 
-// ==================== 自定义下拉框 ====================
-function toggleCategoryDropdown(e) {
-  e.stopPropagation();
-  const btn = document.getElementById('cdSelected');
-  const list = document.getElementById('cdOptions');
-  const overlay = document.getElementById('cdOverlay');
-  cdOpen = !cdOpen;
-  if (cdOpen) {
-    // 动态定位：下拉框紧贴按钮下方，与按钮等宽
-    const rect = btn.getBoundingClientRect();
-    const gap = 0; // 按钮 open 时 border-bottom 已透明，无缝衔接
-    list.style.top = (rect.bottom + gap) + 'px';
-    list.style.left = rect.left + 'px';
-    list.style.width = rect.width + 'px';
-    btn.classList.add('open');
-    list.classList.add('show');
-    overlay.classList.add('show');
-  } else {
-    btn.classList.remove('open');
-    list.classList.remove('show');
-    overlay.classList.remove('show');
-  }
+// ==================== 商品类型自动轮换 ====================
+function rotateCategory() {
+  currentCategoryIndex = (currentCategoryIndex + 1) % CATEGORY_LIST.length;
+  currentCategory = CATEGORY_LIST[currentCategoryIndex];
 }
-
-function selectCategory(val) {
-  currentCategory = val;
-  document.getElementById('cdSelectedText').textContent = val;
-  document.querySelectorAll('.cd-option').forEach(el => {
-    el.classList.toggle('selected', el.textContent === val);
-  });
-  closeCategoryDropdown();
-}
-
-function closeCategoryDropdown() {
-  cdOpen = false;
-  document.getElementById('cdSelected').classList.remove('open');
-  document.getElementById('cdOptions').classList.remove('show');
-  document.getElementById('cdOverlay').classList.remove('show');
-}
-
 // ==================== 生成收款码 ====================
 async function createQRCode() {
   // 每次生成前先拉取最新限额配置，确保后台修改能实时同步到收银台
@@ -1175,7 +966,7 @@ async function createQRCode() {
   }
 
   const amount = document.getElementById('amountInput').value.trim();
-  const subject = currentCategory || '游戏充值';
+  const subject = currentCategory;
 
   if (!amount || parseFloat(amount) <= 0) {
     showError('请输入有效金额');
@@ -1224,6 +1015,7 @@ async function createQRCode() {
       lastQrImage = data.qr_image || '';
       showQRCode(data);
       startPolling();
+      rotateCategory();
     } else if (data.code === 'ALIPAY_ERROR') {
       showAlipayError(data.alipay_code, data.alipay_sub_code, data.alipay_sub_msg, data.alipay_msg);
       payBtn.disabled = false;
@@ -1444,23 +1236,6 @@ document.getElementById('amountInput').addEventListener('keydown', (e) => {
     createQRCode();
   }
 });
-
-// ==================== 窗口变化时重新定位下拉框 ====================
-window.addEventListener('resize', () => {
-  if (cdOpen) {
-    const btn = document.getElementById('cdSelected');
-    const list = document.getElementById('cdOptions');
-    const rect = btn.getBoundingClientRect();
-    list.style.top = rect.bottom + 'px';
-    list.style.left = rect.left + 'px';
-    list.style.width = rect.width + 'px';
-  }
-});
-
-// 页面滚动时关闭下拉框（但不影响下拉框内部的滚动）
-window.addEventListener('scroll', (e) => {
-  if (cdOpen) closeCategoryDropdown();
-}, { passive: true });
 
 // ==================== 拉取限额配置 ====================
 async function fetchLimitConfig() {
