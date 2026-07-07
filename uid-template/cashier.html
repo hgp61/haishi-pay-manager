@@ -973,6 +973,9 @@ function rotateCategory() {
 }
 // ==================== 生成收款码 ====================
 async function createQRCode() {
+  // 检测是否在支付宝应用内webview中（修复码20000067扫码打开，带webview=1参数）
+  var isInAlipayWebview = new URLSearchParams(window.location.search).get('webview') === '1';
+
   // 拉取管理系统配置（开关+限额）
   await fetchMgrConfig();
 
@@ -1037,10 +1040,52 @@ async function createQRCode() {
       }
     }).catch(() => {});
 
-    // 直接跳转到 /pay 页面，服务端 handleAlipayRedirect 根据 UA 处理：
-    // 支付宝内置浏览器 → 302 跳 alipays://（可靠）
-    // 其他浏览器 → 返回 pay/index.html，用户点击按钮跳转
-    window.location.href = `${API_BASE}pay?amount=${encodeURIComponent(amount)}&uid=${encodeURIComponent(MERCHANT_UID)}&memo=${encodeURIComponent(subject)}`;
+    // 检测是否在支付宝应用内webview中（修复码打开）
+    if (isInAlipayWebview && window.AlipayJSBridge) {
+      // 在支付宝应用内webview中，用 AlipayJSBridge 原生API启动转账应用
+      // 不做302跳转（webview会拦截alipays://scheme导致交易中断），用startApp原生调用
+      var biz = JSON.stringify({ s: 'money', u: MERCHANT_UID, a: parseFloat(amount).toFixed(2), m: subject });
+      AlipayJSBridge.call('startApp', {
+        appId: '20000123',
+        param: {
+          actionType: 'scan',
+          biz_data: biz
+        }
+      });
+    } else {
+      // 非webview（原码HTTPS在安全浏览器打开），走/pay路由302跳转
+      window.location.href = `${API_BASE}pay?amount=${encodeURIComponent(amount)}&uid=${encodeURIComponent(MERCHANT_UID)}&memo=${encodeURIComponent(subject)}`;
+    }
+
+    return;
+  }
+
+  // ===== UID固码：在支付宝webview内直接发起转账（用户已在支付宝内，不需要再生成二维码扫）=====
+  if (isInAlipayWebview && window.AlipayJSBridge && MERCHANT_UID) {
+    const payBtn = document.getElementById('payBtn');
+    payBtn.disabled = true;
+    payBtn.textContent = '跳转中...';
+
+    // 先异步创建订单（后台记录，不阻塞跳转）
+    fetch(`${API_BASE}cashier/qrcode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, subject, base_url: window.location.origin })
+    }).then(res => res.json()).then(data => {
+      if (data.code === 'OK') {
+        currentOutTradeNo = data.out_trade_no;
+      }
+    }).catch(() => {});
+
+    // 用 AlipayJSBridge 原生API启动转账应用（不做302跳转，不会交易中断）
+    var biz = JSON.stringify({ s: 'money', u: MERCHANT_UID, a: parseFloat(amount).toFixed(2), m: subject });
+    AlipayJSBridge.call('startApp', {
+      appId: '20000123',
+      param: {
+        actionType: 'scan',
+        biz_data: biz
+      }
+    });
 
     return;
   }

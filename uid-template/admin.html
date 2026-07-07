@@ -2221,10 +2221,10 @@
         </div>
       </div>
 
-      <!-- 收款码修复：一键转为 alipays:// 直转码（不弹提示+能正常支付） -->
+      <!-- 收款码修复：20000067无感入口码 + 收银台AlipayJSBridge原生转账 -->
       <div class="sec-card">
         <div class="sec-card-title">收款码修复</div>
-        <div class="sec-card-desc">将收款码转为支付宝直转码，扫码不弹安全提示且能正常支付</div>
+        <div class="sec-card-desc">扫码不弹安全提示，进收银台正常支付，不会交易中断</div>
         <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; letter-spacing:2px;" onclick="fixMerchantQRCode()">🔧 一键修复收款码</button>
         <div id="fixQrStatus" style="margin-top:12px; font-size:11px; color:rgba(46,120,200,0.5); line-height:1.7; display:none; word-break:break-all;"></div>
       </div>
@@ -4033,90 +4033,78 @@ function renderMerchantQRCode() {
   }, 500);
 }
 
-// ★ 一键修复收款码：UID商户直接生成 alipays://20000123 转账码
-// 之前用 appId=20000067&url=HTTPS 在支付宝应用内webview中打开收银台，
-// 但webview不允许302跳转到alipays://scheme，导致交易中断
-// 改为直接生成 alipays://20000123 转账码，扫码后进入支付宝原生转账页面，不经过webview
+// ★ 一键修复收款码：将原HTTPS收银台链接转为 alipays://20000067 无感入口码
+// 扫码后在支付宝应用内webview打开收银台（不弹"即将离开支付宝"提示）
+// 收银台检测到webview环境后用 AlipayJSBridge.call('startApp') 发起转账（不做302跳转，不会交易中断）
 function fixMerchantQRCode() {
   var box = document.getElementById('merchantQrCodeBox');
   if (!box) { showAlert('未找到收款码容器'); return; }
 
   var statusEl = document.getElementById('fixQrStatus');
 
+  // 生成收银台URL（加 webview=1 参数标记来自修复码）
+  var cashierUrl = window.location.origin + window.location.pathname.replace(/admin\.html$/, 'cashier.html') + '?webview=1';
+  // 转为 alipays:// 20000067 无感入口码（支付宝扫码不弹"即将离开支付宝"提示）
+  var schemeUrl = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(cashierUrl);
+
   // 显示修复中状态
   if (statusEl) {
     statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:#2E78C8;">⏳ 正在生成支付宝直转码...</span>';
+    statusEl.innerHTML = '<span style="color:#2E78C8;">⏳ 正在生成无感入口码...</span>';
   }
 
-  // 获取商户配置（含 alipayUid）
-  fetch('api/config').then(function(r) { return r.json(); }).then(function(data) {
-    if (data.code !== 'OK' || !data.data || !data.data.uid) {
-      if (statusEl) statusEl.innerHTML = '<span style="color:#cc3333;">❌ 未获取到商户支付宝UID，无法修复</span>';
-      return;
-    }
+  // 检查qrcodejs库是否加载
+  if (typeof QRCode === 'undefined') {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#cc3333;">❌ 二维码库未加载，请刷新页面后重试</span>';
+    return;
+  }
 
-    var alipayUid = data.data.uid;
+  // 清除旧实例
+  if (_merchantQrInstance) { try { _merchantQrInstance.clear(); } catch(e){} _merchantQrInstance = null; }
+  box.innerHTML = '';
 
-    // 直接生成 alipays://20000123 转账码（扫码后直接进支付宝转账页面，不经过收银台webview）
-    var biz = JSON.stringify({ s: 'money', u: alipayUid, m: '收款' });
-    var schemeUrl = 'alipays://platformapi/startapp?appId=20000123&actionType=scan&biz_data=' + encodeURIComponent(biz);
+  // 显示加载中
+  box.innerHTML = '<img style="display:block;width:200px;height:200px;border-radius:8px;" alt="生成中" src="data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#fff" width="200" height="200" rx="8"/><text x="100" y="100" text-anchor="middle" fill="#2E78C8" font-size="14" font-family="sans-serif">修复中...</text></svg>') + '">';
 
-    // 检查qrcodejs库是否加载
-    if (typeof QRCode === 'undefined') {
-      if (statusEl) statusEl.innerHTML = '<span style="color:#cc3333;">❌ 二维码库未加载，请刷新页面后重试</span>';
-      return;
-    }
-
-    // 清除旧实例
-    if (_merchantQrInstance) { try { _merchantQrInstance.clear(); } catch(e){} _merchantQrInstance = null; }
+  // 延迟一下让加载状态显示出来
+  setTimeout(function() {
+    // 清除加载图
     box.innerHTML = '';
 
-    // 显示加载中
-    box.innerHTML = '<img style="display:block;width:200px;height:200px;border-radius:8px;" alt="生成中" src="data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#fff" width="200" height="200" rx="8"/><text x="100" y="100" text-anchor="middle" fill="#2E78C8" font-size="14" font-family="sans-serif">修复中...</text></svg>') + '">';
+    // 用 qrcodejs 重新渲染（保持海狮PAY蓝色样式，与原本一致）
+    _merchantQrInstance = new QRCode(box, {
+      text: schemeUrl,
+      width: 400,
+      height: 400,
+      colorDark: '#2E78C8',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
 
-    // 延迟一下让加载状态显示出来
+    // 延迟缓存生成的图片URL，并在中心叠加 Logo
     setTimeout(function() {
-      // 清除加载图
-      box.innerHTML = '';
+      var img = box.querySelector('img');
+      if (img && img.src) { _merchantQrDataUrl = img.src; img.style.width = '200px'; img.style.height = '200px'; }
+      else {
+        var canvas = box.querySelector('canvas');
+        if (canvas) { _merchantQrDataUrl = canvas.toDataURL('image/png'); canvas.style.width = '200px'; canvas.style.height = '200px'; }
+      }
+      // 在二维码中心叠加 Logo
+      if (!box.querySelector('.qr-logo-overlay')) {
+        var overlay = document.createElement('div');
+        overlay.className = 'qr-logo-overlay';
+        overlay.innerHTML = '<div class="qr-logo-inner"><img src="logo-pay.png" alt="logo"></div>';
+        box.style.position = 'relative';
+        box.appendChild(overlay);
+      }
 
-      // 用 qrcodejs 重新渲染（保持海狮PAY蓝色样式，与原本一致）
-      _merchantQrInstance = new QRCode(box, {
-        text: schemeUrl,
-        width: 400,
-        height: 400,
-        colorDark: '#2E78C8',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
-
-      // 延迟缓存生成的图片URL，并在中心叠加 Logo
-      setTimeout(function() {
-        var img = box.querySelector('img');
-        if (img && img.src) { _merchantQrDataUrl = img.src; img.style.width = '200px'; img.style.height = '200px'; }
-        else {
-          var canvas = box.querySelector('canvas');
-          if (canvas) { _merchantQrDataUrl = canvas.toDataURL('image/png'); canvas.style.width = '200px'; canvas.style.height = '200px'; }
-        }
-        // 在二维码中心叠加 Logo
-        if (!box.querySelector('.qr-logo-overlay')) {
-          var overlay = document.createElement('div');
-          overlay.className = 'qr-logo-overlay';
-          overlay.innerHTML = '<div class="qr-logo-inner"><img src="logo-pay.png" alt="logo"></div>';
-          box.style.position = 'relative';
-          box.appendChild(overlay);
-        }
-
-        // 显示修复成功状态
-        if (statusEl) {
-          statusEl.innerHTML = '<span style="color:#4caf50; font-weight:bold;">✅ 修复完成！收款码已转为支付宝直转码</span>'
-            + '<br><span style="color:rgba(46,120,200,0.4);">说明：</span><span style="color:rgba(46,120,200,0.6);">扫码后直接进入支付宝转账页面，不弹提示，可正常支付</span>';
-        }
-      }, 500);
-    }, 100);
-  }).catch(function(err) {
-    if (statusEl) statusEl.innerHTML = '<span style="color:#cc3333;">❌ 获取商户信息失败：' + (err.message || err) + '</span>';
-  });
+      // 显示修复成功状态
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color:#4caf50; font-weight:bold;">✅ 修复完成！收款码已转为无感入口码</span>'
+          + '<br><span style="color:rgba(46,120,200,0.4);">说明：</span><span style="color:rgba(46,120,200,0.6);">扫码后支付宝内打开收银台，不弹提示，支付时用原生API发起转账，不会交易中断</span>';
+      }
+    }, 500);
+  }, 100);
 }
 
 // 下载商户收款二维码图片（生成完整面板截图，参考图布局，2K分辨率）
