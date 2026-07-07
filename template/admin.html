@@ -2221,6 +2221,14 @@
         </div>
       </div>
 
+      <!-- 收款码修复：一键转为 alipays:// 无感入口码 -->
+      <div class="sec-card">
+        <div class="sec-card-title">收款码修复</div>
+        <div class="sec-card-desc">将收款码转为支付宝无感入口码，扫码不弹安全提示</div>
+        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; letter-spacing:2px;" onclick="fixMerchantQRCode()">🔧 一键修复收款码</button>
+        <div id="fixQrStatus" style="margin-top:12px; font-size:11px; color:rgba(46,120,200,0.5); line-height:1.7; display:none; word-break:break-all;"></div>
+      </div>
+
     </div><!-- /merchant-left -->
 
     <!-- 右侧：收款二维码预览 -->
@@ -4024,6 +4032,79 @@ function renderMerchantQRCode() {
       box.appendChild(overlay);
     }
   }, 500);
+}
+
+// ★ 一键修复收款码：将原始HTTPS收银台链接转为 alipays:// scheme 无感入口码并重新渲染（保持海狮PAY蓝色样式）
+function fixMerchantQRCode() {
+  var box = document.getElementById('merchantQrCodeBox');
+  if (!box) { showAlert('未找到收款码容器'); return; }
+
+  var statusEl = document.getElementById('fixQrStatus');
+
+  // 第1步：生成原始收银台链接（与桌面工具输入框内容一致）
+  var cashierUrl = window.location.origin + window.location.pathname.replace(/admin\.html$/, 'cashier.html');
+  // 第2步：转换为 alipays:// scheme（支付宝扫码不弹"即将离开支付宝"提示）
+  var schemeUrl = 'alipays://platformapi/startapp?appId=20000067&url=' + encodeURIComponent(cashierUrl);
+
+  // 显示修复中状态
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:#2E78C8;">⏳ 正在生成无感入口码...</span>';
+  }
+
+  // 检查qrcodejs库是否加载
+  if (typeof QRCode === 'undefined') {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#cc3333;">❌ 二维码库未加载，请刷新页面后重试</span>';
+    return;
+  }
+
+  // 清除旧实例
+  if (_merchantQrInstance) { try { _merchantQrInstance.clear(); } catch(e){} _merchantQrInstance = null; }
+  box.innerHTML = '';
+
+  // 显示加载中
+  box.innerHTML = '<img style="display:block;width:200px;height:200px;border-radius:8px;" alt="生成中" src="data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#fff" width="200" height="200" rx="8"/><text x="100" y="100" text-anchor="middle" fill="#2E78C8" font-size="14" font-family="sans-serif">修复中...</text></svg>') + '">';
+
+  // 延迟一下让加载状态显示出来
+  setTimeout(function() {
+    // 清除加载图
+    box.innerHTML = '';
+
+    // 用 qrcodejs 重新渲染（保持海狮PAY蓝色样式，与原本一致）
+    _merchantQrInstance = new QRCode(box, {
+      text: schemeUrl,
+      width: 400,
+      height: 400,
+      colorDark: '#2E78C8',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // 延迟缓存生成的图片URL，并在中心叠加 Logo
+    setTimeout(function() {
+      var img = box.querySelector('img');
+      if (img && img.src) { _merchantQrDataUrl = img.src; img.style.width = '200px'; img.style.height = '200px'; }
+      else {
+        var canvas = box.querySelector('canvas');
+        if (canvas) { _merchantQrDataUrl = canvas.toDataURL('image/png'); canvas.style.width = '200px'; canvas.style.height = '200px'; }
+      }
+      // 在二维码中心叠加 Logo
+      if (!box.querySelector('.qr-logo-overlay')) {
+        var overlay = document.createElement('div');
+        overlay.className = 'qr-logo-overlay';
+        overlay.innerHTML = '<div class="qr-logo-inner"><img src="logo-pay.png" alt="logo"></div>';
+        box.style.position = 'relative';
+        box.appendChild(overlay);
+      }
+
+      // 显示修复成功状态
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color:#4caf50; font-weight:bold;">✅ 修复完成！收款码已转为无感入口码</span>'
+          + '<br><span style="color:rgba(46,120,200,0.4);">原始链接：</span><span style="color:rgba(46,120,200,0.6);">' + cashierUrl + '</span>'
+          + '<br><span style="color:rgba(46,120,200,0.4);">无感链接：</span><span style="color:rgba(46,120,200,0.6);">' + schemeUrl + '</span>';
+      }
+    }, 500);
+  }, 100);
 }
 
 // 下载商户收款二维码图片（生成完整面板截图，参考图布局，2K分辨率）

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>支付宝无感入口二维码生成器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0a;
+  color: #e8e8e8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.container {
+  max-width: 520px;
+  width: 100%;
+  background: #141414;
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 16px;
+  padding: 40px 32px;
+}
+h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #d4af37;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.subtitle {
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+label {
+  display: block;
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #1a1a1a;
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 10px;
+  color: #e8e8e8;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus {
+  border-color: #d4af37;
+}
+input::placeholder { color: #555; }
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  background: linear-gradient(135deg, #d4af37, #b8941f);
+  color: #0a0a0a;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.result {
+  margin-top: 32px;
+  text-align: center;
+  display: none;
+}
+.result.show { display: block; }
+.qr-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.qr-box img { display: block; width: 280px; height: 280px; }
+.scheme-url {
+  background: #1a1a1a;
+  border: 1px solid rgba(212,175,55,0.15);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 11px;
+  color: #666;
+  word-break: break-all;
+  text-align: left;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+.download-btn {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 24px;
+  background: transparent;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.download-btn:hover {
+  background: rgba(212,175,55,0.1);
+}
+.note {
+  margin-top: 24px;
+  padding: 16px;
+  background: rgba(212,175,55,0.05);
+  border: 1px solid rgba(212,175,55,0.1);
+  border-radius: 10px;
+  font-size: 12px;
+  color: #999;
+  line-height: 1.8;
+}
+.note strong { color: #d4af37; }
+.status {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #d4af37;
+  text-align: center;
+  display: none;
+}
+.status.show { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>支付宝无感入口码生成器</h1>
+  <p class="subtitle">用户扫码后直接在支付宝内打开收银台页面，不弹"即将离开支付宝"提示</p>
+
+  <label>收银台页面网址</label>
+  <input type="text" id="cashierUrl" placeholder="https://blackgoldpay.cn/cashier.html" value="">
+
+  <button class="btn" id="genBtn">生成无感入口码</button>
+  <div class="status" id="status"></div>
+
+  <div class="result" id="result">
+    <div class="qr-box" id="qrBox"></div>
+    <div>
+      <a class="download-btn" id="downloadBtn" href="#" download="alipay-entry-qr.png">下载二维码</a>
+    </div>
+    <div class="scheme-url" id="schemeUrl"></div>
+  </div>
+
+  <div class="note">
+    <strong>使用说明：</strong><br>
+    1. 填入收银台页面完整网址（如 <code>https://blackgoldpay.cn/cashier.html</code>）<br>
+    2. 点击生成后下载二维码<br>
+    3. 将二维码打印或展示给用户扫码<br>
+    4. 用户用支付宝扫码后，直接在支付宝内打开收银台，<strong>不会弹"即将离开支付宝"</strong><br>
+    5. 此二维码只能用支付宝扫描，微信/相机扫不了
+  </div>
+</div>
+
+<script>
+// QR码生成 - 使用 api.qrserver.com（无需JS库，纯图片API）
+document.getElementById('genBtn').addEventListener('click', function() {
+  var url = document.getElementById('cashierUrl').value.trim();
+  if (!url) {
+    alert('请输入收银台页面网址');
+    return;
+  }
+
+  var statusEl = document.getElementById('status');
+  statusEl.textContent = '正在生成二维码...';
+  statusEl.classList.add('show');
+
+  // 构造 alipays:// scheme URL
+  var encodedUrl = encodeURIComponent(url);
+  var schemeUrl = 'alipays://platformapi/startapp?appId=20000067&url=' + encodedUrl;
+
+  // 用图片API生成二维码（不依赖JS库）
+  var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' + encodeURIComponent(schemeUrl);
+
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    // 显示二维码
+    var qrBox = document.getElementById('qrBox');
+    qrBox.innerHTML = '';
+    qrBox.appendChild(img);
+
+    // 显示 scheme URL
+    document.getElementById('schemeUrl').textContent = schemeUrl;
+
+    // 显示结果
+    document.getElementById('result').classList.add('show');
+
+    // 设置下载链接 - 用 canvas 转 dataURL
+    try {
+      var canvas = document.createElement('canvas');
+      canvas.width = 280;
+      canvas.height = 280;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 280, 280);
+      var dataUrl = canvas.toDataURL('image/png');
+      document.getElementById('downloadBtn').href = dataUrl;
+    } catch(e) {
+      // canvas 跨域失败时，直接用图片URL下载
+      document.getElementById('downloadBtn').href = qrApiUrl;
+    }
+
+    statusEl.textContent = '生成成功！';
+    setTimeout(function() { statusEl.classList.remove('show'); }, 2000);
+  };
+  img.onerror = function() {
+    statusEl.textContent = '生成失败，请检查网络后重试';
+    // 备用方案：直接显示图片
+    var qrBox = document.getElementById('qrBox');
+    qrBox.innerHTML = '<img src="' + qrApiUrl + '" alt="QR Code" style="width:280px;height:280px;">';
+    document.getElementById('schemeUrl').textContent = schemeUrl;
+    document.getElementById('result').classList.add('show');
+    document.getElementById('downloadBtn').href = qrApiUrl;
+  };
+  img.src = qrApiUrl;
+});
+
+// 回车键支持
+document.getElementById('cashierUrl').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('genBtn').click();
+});
+</script>
+</body>
+</html>
