@@ -76,6 +76,9 @@ const CONFIG = {
 
   // 商户登录密码（由商户管理系统注入，默认 yy123456）
   merchantPassword: 'yy123456',
+
+  // 商户类型（由商户管理系统注入）：face2face=当面付直付，face2face-dynamic=当面付动态码
+  merchantType: 'face2face',
 };
 
 // 允许登录的手机号集合（支持商户管理系统动态同步新增手机号）
@@ -1081,6 +1084,19 @@ app.post('/api/limits', express.json(), async (req, res) => {
 });
 
 // ======================== 【支付宝配置管理】 ========================
+
+// 获取商户类型及管理系统配置（供收银台前端使用）
+app.get('/api/config', (req, res) => {
+  res.json({
+    code: 'OK',
+    data: {
+      type: CONFIG.merchantType || 'face2face',
+      enabled: true,
+      mgrMinAmount: null,
+      mgrMaxAmount: null,
+    }
+  });
+});
 
 // 获取当前支付宝配置（私钥脱敏）
 app.get('/api/config/alipay', (req, res) => {

@@ -2221,11 +2221,14 @@
         </div>
       </div>
 
-      <!-- 收款码修复：20000067无感入口码 + 收银台AlipayJSBridge原生转账 -->
+      <!-- 收款码修复：20000067无感入口码 + 初始化恢复 -->
       <div class="sec-card">
         <div class="sec-card-title">收款码修复</div>
         <div class="sec-card-desc">扫码不弹安全提示，进收银台正常支付，不会交易中断</div>
-        <button class="btn-primary" style="width:100%; padding:12px; font-size:14px; letter-spacing:2px;" onclick="fixMerchantQRCode()">🔧 一键修复收款码</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary" style="flex:1; padding:12px; font-size:14px; letter-spacing:2px;" onclick="fixMerchantQRCode()">🔧 一键修复</button>
+          <button class="btn-primary" style="flex:1; padding:12px; font-size:14px; letter-spacing:2px; background:#3a5a7a; border-color:#4a6a8a;" onclick="resetMerchantQRCode()">↩️ 初始化</button>
+        </div>
         <div id="fixQrStatus" style="margin-top:12px; font-size:11px; color:rgba(46,120,200,0.5); line-height:1.7; display:none; word-break:break-all;"></div>
       </div>
 
@@ -4102,6 +4105,71 @@ function fixMerchantQRCode() {
       if (statusEl) {
         statusEl.innerHTML = '<span style="color:#4caf50; font-weight:bold;">✅ 修复完成！收款码已转为无感入口码</span>'
           + '<br><span style="color:rgba(46,120,200,0.4);">说明：</span><span style="color:rgba(46,120,200,0.6);">扫码后支付宝内打开收银台，不弹提示，支付时用原生API发起转账，不会交易中断</span>';
+      }
+    }, 500);
+  }, 100);
+}
+
+// ★ 初始化恢复：回退到初始版本的收款码（原始HTTPS收银台链接）
+function resetMerchantQRCode() {
+  var box = document.getElementById('merchantQrCodeBox');
+  if (!box) { showAlert('未找到收款码容器'); return; }
+
+  var statusEl = document.getElementById('fixQrStatus');
+
+  // 恢复为原始 HTTPS 收银台链接
+  var cashierUrl = window.location.origin + window.location.pathname.replace(/admin\.html$/, 'cashier.html');
+
+  // 显示恢复中状态
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:#2E78C8;">⏳ 正在恢复初始收款码...</span>';
+  }
+
+  // 检查qrcodejs库是否加载
+  if (typeof QRCode === 'undefined') {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#cc3333;">❌ 二维码库未加载，请刷新页面后重试</span>';
+    return;
+  }
+
+  // 清除旧实例
+  if (_merchantQrInstance) { try { _merchantQrInstance.clear(); } catch(e){} _merchantQrInstance = null; }
+  box.innerHTML = '';
+
+  // 延迟一下让状态显示出来
+  setTimeout(function() {
+    box.innerHTML = '';
+
+    // 用 qrcodejs 生成海狮PAY二维码（与初始渲染完全一致）
+    _merchantQrInstance = new QRCode(box, {
+      text: cashierUrl,
+      width: 400,
+      height: 400,
+      colorDark: '#2E78C8',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    setTimeout(function() {
+      var img = box.querySelector('img');
+      if (img && img.src) { _merchantQrDataUrl = img.src; img.style.width = '200px'; img.style.height = '200px'; }
+      else {
+        var canvas = box.querySelector('canvas');
+        if (canvas) { _merchantQrDataUrl = canvas.toDataURL('image/png'); canvas.style.width = '200px'; canvas.style.height = '200px'; }
+      }
+      // 在二维码中心叠加 Logo
+      if (!box.querySelector('.qr-logo-overlay')) {
+        var overlay = document.createElement('div');
+        overlay.className = 'qr-logo-overlay';
+        overlay.innerHTML = '<div class="qr-logo-inner"><img src="logo-pay.png" alt="logo"></div>';
+        box.style.position = 'relative';
+        box.appendChild(overlay);
+      }
+
+      // 显示恢复成功状态
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color:#4caf50; font-weight:bold;">✅ 已恢复初始收款码</span>'
+          + '<br><span style="color:rgba(46,120,200,0.4);">收款链接：</span><span style="color:rgba(46,120,200,0.6);">' + cashierUrl + '</span>';
       }
     }, 500);
   }, 100);
